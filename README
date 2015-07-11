@@ -483,3 +483,5 @@ Changelog
 
 2015/06/01 - Add some binmode() calls to let this work better on Windows
            - safety check on $ENV{HOME} since Windows doesn't define this
+
+2015/07/11 - merge_dsd program added
