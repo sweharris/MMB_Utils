@@ -193,6 +193,9 @@ should work on multi-catalogues.
 * info
     Does an effective *INFO *.* for an SSD
 
+* merge_dsd
+    Will take two SSD image and interleave them into a single DSD image
+
 * opt4
     *OPT4 equivalent
 
