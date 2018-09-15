@@ -16,7 +16,7 @@ my $prog=$0; $prog=~s!^.*/!!;
 
 if (!$INSTALL_DIR)
 {
-  $INSTALL_DIR=$FindBin::Bin;
+  $INSTALL_DIR=$FindBin::RealBin;
   my $prog2=$INSTALL_DIR . "/$prog";
   die "Can not find myself in $INSTALL_DIR\n" unless -x $prog2;
   if ( -l $prog2 )
