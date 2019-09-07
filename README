@@ -29,13 +29,18 @@ ln -s /usr/local/beeb/beeb  /usr/local/bin/beeb
 
 For all the commands that work on MMB files, the default MMB is called
 "BEEB.MMB" but this can be changed with "-f otherfile" if used as the
-first parameter.
+first parameter, or by setting $BBC_FILE
 
 So
   beeb dinfo 2
 would do a "*INFO" for all files in image 2 in BEEB.MMB
   beeb dinfo -f other.MMB 2
 would do a "*INFO" for all files in image 2 in other.MMB
+  export BBC_FILE=myfile.MMB
+  beeb dinfo 2
+would do a "*INFO" for all files in image 2 in myfile.MMB
+
+For greater control of the MMB file used, see later around $BEEB_UTILS_DFS
 
 Other commands that work on normal files do not need "-f" as the first
 option because they typically always require an filename (no default)
