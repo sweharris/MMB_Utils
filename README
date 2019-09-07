@@ -493,3 +493,5 @@ Changelog
 
 2018/09/15 - Change FindBin::Bin to FindBin::RealBin to handle relative
              symlinks.  Thanks to Ray Bellis
+
+2019/09/06 - Allow BBC_FILE to specify the MMB file
