@@ -299,6 +299,13 @@ sub GetDskName($$)
   my $offset=$disk*16+16;
  
   my $title=substr($$disktable,$offset,12); $title =~ s/\0.*$//;
+
+  # Convert any non-ascii character to a '?'
+  $title =~ s/[\x01-\x1f\x7f-\xff]/?/g;
+
+  # Ensure title is 12 characters long
+  $title .= " "x(12-length($title));
+
   my $type=substr($$disktable,$offset+15,1); $type=ord($type);
   return ($title,$type);
 }

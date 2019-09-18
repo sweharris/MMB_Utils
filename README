@@ -495,3 +495,5 @@ Changelog
              symlinks.  Thanks to Ray Bellis
 
 2019/09/06 - Allow BBC_FILE to specify the MMB file
+
+2019/09/17 - Strip out bad characers in titles in MMB catalogue
