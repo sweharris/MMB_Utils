@@ -148,6 +148,10 @@ MMB Impacting commands
     use (so dkill it first if you want to replace it).  The MMB
     catalogue name for this disk is set to the SSDs name
 
+* drecat
+    Performs similar to *DRECAT; for each disk marked as formatted
+    the title of the SSD will be read and the master catalogue updated.
+
 ===================================================================
 SSD Impacting commands
 ===================================================================
@@ -497,3 +501,5 @@ Changelog
 2019/09/06 - Allow BBC_FILE to specify the MMB file
 
 2019/09/17 - Strip out bad characers in titles in MMB catalogue
+
+2020/10/03 - Add drecat
