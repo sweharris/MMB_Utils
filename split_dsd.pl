@@ -10,10 +10,12 @@ use FindBin;
 use lib "$FindBin::Bin";
 use BeebUtils;
 
+my $concat=0;
+if (@ARGV && $ARGV[0] eq '-concat') { $concat=1; shift @ARGV; }
 @ARGV=BeebUtils::init_ssd(@ARGV);
 my $src=$BeebUtils::BBC_FILE;
 my ($dest1,$dest2)=@ARGV;
-die "Syntax: $BeebUtils::PROG src.dsd side0.ssd side2.ssd\n" unless $dest2;
+die "Syntax: $BeebUtils::PROG [-concat] src.dsd side0.ssd side2.ssd\n" unless $dest2;
 
 die "$dest1 already exists\n" if -e $dest1;
 die "$dest2 already exists\n" if -e $dest2;
@@ -26,12 +28,22 @@ $src_image .= "\0" x ($SIZE*80*2);
 
 my ($disk1,$disk2);
 
+# In concat mode the first 200K is for disk1, the second is for disk2
+# Otherwise we're interleaved at the track level
 
-foreach my $track (0..79)
+if ($concat)
 {
-  my $offset=$track*$SIZE*2; # interleaved
-  $disk1 .= substr($src_image,$offset,$SIZE);
-  $disk2 .= substr($src_image,$offset+$SIZE,$SIZE);
+  $disk1 = substr($src_image,0,$SIZE*80);
+  $disk2 = substr($src_image,$SIZE*80,$SIZE*80);
+}
+else
+{
+  foreach my $track (0..79)
+  {
+    my $offset=$track*$SIZE*2; # interleaved
+    $disk1 .= substr($src_image,$offset,$SIZE);
+    $disk2 .= substr($src_image,$offset+$SIZE,$SIZE);
+  }
 }
 
 BeebUtils::write_ssd(\$disk1,$dest1);

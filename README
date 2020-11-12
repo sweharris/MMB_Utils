@@ -204,6 +204,10 @@ should work on multi-catalogues.
 
 * merge_dsd
     Will take two SSD image and interleave them into a single DSD image
+    If the -concat option is used then it assumes the DSD is two SSDs
+    stacked after each other (side0 then side 2).  Without this option
+    it assumes the disk tracks are interleaved (side0 track 0, side 2
+    track 0, side 0 track 1... etc).  Interleaving is more normal.
 
 * opt4
     *OPT4 equivalent
@@ -255,6 +259,10 @@ should work on multi-catalogues.
 
 * split_dsd
     Will take a DSD image and de-interleave it into two SSD images
+    If the -concat option is used then it assumes the DSD is two SSDs
+    stacked after each other (side0 then side 2).  Without this option
+    it assumes the disk tracks are interleaved (side0 track 0, side 2
+    track 0, side 0 track 1... etc).  Interleaving is more normal.
 
 * title
     Does an effective *TITLE for an SSD
@@ -503,3 +511,5 @@ Changelog
 2019/09/17 - Strip out bad characers in titles in MMB catalogue
 
 2020/10/03 - Add drecat
+
+2020/11/11 - Add -concat options to split_dsd/merge_dsd

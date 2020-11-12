@@ -10,10 +10,12 @@ use FindBin;
 use lib "$FindBin::Bin";
 use BeebUtils;
 
+my $concat=0;
+if (@ARGV && $ARGV[0] eq '-concat') { $concat=1; shift @ARGV; }
 @ARGV=BeebUtils::init_ssd(@ARGV);
 my $src0=$BeebUtils::BBC_FILE;
 my ($src2,$dest)=@ARGV;
-die "Syntax: $BeebUtils::PROG side0.ssd side2.ssd merged_disk.dsd\n" unless $dest;
+die "Syntax: $BeebUtils::PROG [-concat] side0.ssd side2.ssd merged_disk.dsd\n" unless $dest;
 
 die "$dest already exists\n" if -e $dest;
  
@@ -28,11 +30,19 @@ $src2_image .= "\0" x ($SIZE*80*2);
 
 my $dest_image="";
 
-foreach my $track (0..79)
+# In concat mode, just append, otherwise interleave at the track level
+if ($concat)
 {
-  my $offset=$track*$SIZE;
-  $dest_image .= substr($src0_image,$offset,$SIZE);
-  $dest_image .= substr($src2_image,$offset,$SIZE);
+  $dest_image = substr($src0_image,0,$SIZE*80) . substr($src2_image,0,$SIZE*80);
+}
+else
+{
+  foreach my $track (0..79)
+  {
+    my $offset=$track*$SIZE;
+    $dest_image .= substr($src0_image,$offset,$SIZE);
+    $dest_image .= substr($src2_image,$offset,$SIZE);
+  }
 }
 
 BeebUtils::write_ssd(\$dest_image,$dest);
