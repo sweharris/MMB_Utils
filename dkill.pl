@@ -11,7 +11,7 @@ use lib "$FindBin::Bin";
 use BeebUtils;
 @ARGV=BeebUtils::init(@ARGV);
 my $force=0;
-if ($ARGV[0] eq '-y') { $force=1; shift @ARGV; }
+if (@ARGV && $ARGV[0] eq '-y') { $force=1; shift @ARGV; }
 
 my $dr=$ARGV[0];
 die "Syntax: $BeebUtils::PROG [-f MMB_file] [-y] image_number [R]\n" unless defined($dr);
