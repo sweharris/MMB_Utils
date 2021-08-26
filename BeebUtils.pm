@@ -450,7 +450,7 @@ sub load_external_ssd(;$$)
   my ($fname,$size_check)=@_;
   my $target=$fname||$BBC_FILE;
   
-  die "$target is not a file!\n" unless -f $target;
+  die "$target is not a file!\n" unless -f $target || $target eq '-';
   my $f=new FileHandle "<$target";
   die "Could not open $target: $!\n" unless $f;
   binmode($f);
