@@ -267,6 +267,12 @@ should work on multi-catalogues.
 * title
     Does an effective *TITLE for an SSD
 
+* to_stdout
+    Will take an SSD and a filename on that disk and send it to stdout.
+    So could be used in a pipeline, such as:
+      beeb to_stdout mydisk.ssd '$.!BOOT' | beeb type -
+
+
 ===================================================================
 Utility Programs (file commands)
 ===================================================================
@@ -513,3 +519,7 @@ Changelog
 2020/10/03 - Add drecat
 
 2020/11/11 - Add -concat options to split_dsd/merge_dsd
+
+2021/08/26 - Allow for "-" to be specified as an SSD name eg for things like
+               unzip -q -c myssd.zip | beeb info -
+             Add new command "to_stdout"
