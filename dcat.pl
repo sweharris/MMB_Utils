@@ -12,12 +12,20 @@ use BeebUtils;
 
 @ARGV=BeebUtils::init(@ARGV);
 
+my $all=0;
+if (@ARGV && $ARGV[0] eq '-a')
+{
+  $all=1;
+}
+
 my %disk=BeebUtils::load_dcat();
 
 foreach (sort {$a <=> $b} keys %disk)
 {
-  next unless $disk{$_}{Formatted};
-  my $d="$_"; $d=" $d" if length($d)==1; $d=" $d" if length($d)==2;
+  next unless $disk{$_}{Formatted} || $all;
+  my $t=$disk{$_}{DiskTitle};
+  $t="<Unformatted>" unless $disk{$_}{Formatted};
+  my $d="$_"; $d=" $d" if length($d)==1; $d=" $d" if length($d)==2; $d=" $d" if length($d)==3;
   my $L=$disk{$_}{ReadOnly}?" (L)":"";
-  print "$d: $disk{$_}{DiskTitle}$L\n";
+  print "$d: $t$L\n";
 }

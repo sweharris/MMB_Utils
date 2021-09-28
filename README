@@ -523,3 +523,5 @@ Changelog
 2021/08/26 - Allow for "-" to be specified as an SSD name eg for things like
                unzip -q -c myssd.zip | beeb info -
              Add new command "to_stdout"
+
+2021/09/28 - Allow "-a" for dcat to show all disk slots, even unformatted ones
