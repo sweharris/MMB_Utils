@@ -33,7 +33,7 @@ my $DiskCatalogueSize = 2 * $SecSize ; # DFS
 my $DiskSectors = 800 ; # Only size supported! 80track single density
 my $DiskSize = $DiskSectors * $SecSize;
 
-my $MMBSize = $DisksPerCatalog*$DiskSize+$DiskTableSize;
+our $MMBSize = $DisksPerCatalog*$DiskSize+$DiskTableSize;
 
 my $CatalogueMaxFiles = 31;  # Acorn maximum.  Solidisk can exceed this
                              # but we only read that format

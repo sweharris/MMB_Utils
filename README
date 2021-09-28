@@ -162,6 +162,14 @@ MMB Impacting commands
     use (so dkill it first if you want to replace it).  The MMB
     catalogue name for this disk is set to the SSDs name
 
+* dsplit_mmb
+    Will split a Extended MMB into a collection of single extent MMBs
+    numbered 0.MMB -> F.MMB.   If an optional number is given then only
+    that extent will be extracted
+
+      % beeb dsplit_mmb RESULTS 13
+      Created RESULTS/D.MMB
+
 * drecat
     Performs similar to *DRECAT; for each disk marked as formatted
     the title of the SSD will be read and the master catalogue updated.
@@ -561,3 +569,4 @@ Changelog
              Add the ability to handle Extended MMBs
              Add dextend to add an extent to an MMB
              Add dmmb_info to report on some basic MMB statistics
+             Added dsplit_mmb
