@@ -15,9 +15,41 @@ my $dest=$BeebUtils::BBC_FILE || 'BEEB.MMB';
 
 die "$dest already exists\n" if -e $dest;
  
+my $extra=$ARGV[0];
+if (defined($extra))
+{
+  die "Syntax: $BeebUtils::PROG [-f MMB_file] [extra_catalogs]\n   extra_catalogues must be a number between 1 and 15 inclusive\n" unless $extra=~/^[0-9]+$/;
+;
+
+  $extra=int($extra);
+  if ($extra < 1 || $extra > 15)
+  {
+    die "extra_catalogues must be a number between 1 and 15 inclusive\n";
+  }
+}
+else
+{
+  $extra=0;
+}
+
 my $image=BeebUtils::blank_mmb();
 
-# This is an abuse of write_ssd() but it works!
+my $fh=new FileHandle ">$dest";
+die "Can not open $dest for saving\n" unless $fh;
 
-BeebUtils::write_ssd(\$image,$dest);
-print "Blank $dest created\n";
+binmode($fh);
+print $fh $image;
+
+if ($extra)
+{
+  foreach my $i (1..$extra)
+  {
+    print $fh $image;
+  }
+  sysseek($fh,8,0);
+  syswrite($fh,chr(160+$extra),1);
+}
+
+close($fh);
+
+print "Blank $dest created (with $extra additional catalogues)\n";

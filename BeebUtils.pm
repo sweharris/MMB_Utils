@@ -20,15 +20,20 @@ package BeebUtils;
 use warnings;
 use strict;
 use FileHandle;
+use POSIX;
 
 # Constants
 my $SecSize=256;
 my $DiskTableSize=32*$SecSize;
-my $MaxDisks = ($DiskTableSize/16)-1;  # slot 0 isn't a real disk
+my $DisksPerCatalog = ($DiskTableSize/16)-1;  # slot 0 isn't a real disk
+my $MaxDisks = $DisksPerCatalog;
+my $NumTables = 1;  # Multiple tables
 
 my $DiskCatalogueSize = 2 * $SecSize ; # DFS
 my $DiskSectors = 800 ; # Only size supported! 80track single density
 my $DiskSize = $DiskSectors * $SecSize;
+
+my $MMBSize = $DisksPerCatalog*$DiskSize+$DiskTableSize;
 
 my $CatalogueMaxFiles = 31;  # Acorn maximum.  Solidisk can exceed this
                              # but we only read that format
@@ -212,6 +217,29 @@ sub init(@)
     die "Missing filename argument to -f\n";
   }
 
+  # We need to check the MMB file to see if it's an extended one
+  # and if so, set NumTables and MaxDisks
+  # An entry of 0xA# at offset 8 in the table (previously unused)
+  # means there's # additional tables
+  my $fname=$BBC_FILE;
+  $fname=$DEFAULT_BBC_FILE unless $fname;
+  my $fh = new FileHandle("+< $fname");
+
+  if ($fh)
+  {
+    binmode($fh);
+    sysseek($fh,8,0);
+    my $ext_byte;
+    sysread($fh,$ext_byte,1);
+    close($fh);
+    $ext_byte=ord($ext_byte);
+    if ($ext_byte > 160 && $ext_byte < 176)
+    {
+      # We have 1-15 catalogues
+      $NumTables = $ext_byte-159;
+      $MaxDisks = $NumTables * $MaxDisks;
+    }
+  }
   return(@arg);
 }
 
@@ -248,10 +276,25 @@ sub OpenFile()
 
 sub LoadDiskTable()
 {
-  my $disktable;
+  my ($disktable,$thistable);
   OpenFile;
   sysseek($file_handle,0,0);
   sysread($file_handle,$disktable,$DiskTableSize);
+
+  # Add any secondary catalogues
+  foreach my $i (1..$NumTables-1)
+  {
+    # We skip the first 16 bytes since they're unused in secondary catalogues
+    sysseek($file_handle,$i*$MMBSize+16,0);
+    sysread($file_handle,$thistable,$DiskTableSize-16);
+    # If the MMB is short then abort
+    if (length($thistable) != $DiskTableSize-16)
+    {
+      printf("Unable to read MMB Catalogue %d at location %d\n  Got %d bytes but expected %d\n  Is this a corrupted MMB?\n",$i,$i*$MMBSize+16,length($thistable),$DiskTableSize-16);
+      exit(-1);
+    }
+    $disktable .= $thistable
+  }
   return $disktable;
 }
 
@@ -259,8 +302,18 @@ sub SaveDiskTable($)
 {
   my ($disktable)=@_;
   OpenFile;
+
+  my $thistable=$$disktable;
   sysseek($file_handle,0,0);
-  syswrite($file_handle,$$disktable,$DiskTableSize);
+  syswrite($file_handle,$thistable,$DiskTableSize);
+  $thistable=substr($thistable,$DiskTableSize);
+  foreach my $i (1..$NumTables-1)
+  {
+    # We skip the first 16 bytes since they're unused in secondary catalogues
+    sysseek($file_handle,$i*$MMBSize+16,0);
+    syswrite($file_handle,$thistable,$DiskTableSize-16);
+    $thistable=substr($thistable,$DiskTableSize-16);
+  }
 }
 
 # Disk slot and new title and table
@@ -337,7 +390,11 @@ sub DiskPtr($;$)
 {
   my ($DiskNo,$Sec)=@_;
   $Sec=0 unless $Sec;
-  return $DiskTableSize+($DiskNo*$DiskSize)+($Sec*$SecSize);
+
+  # If the image is in a secondary catalogue then we need to add extra
+  # DiskTableSize offsets
+  my $offset=ceil($DiskNo/$DisksPerCatalog);
+  return ($DiskTableSize*$offset)+($DiskNo*$DiskSize)+($Sec*$SecSize);
 }
 
 sub BootOpt($)
@@ -411,9 +468,9 @@ sub load_dcat(;$)
 
 sub blank_mmb()
 {
-  my $image="\0" x (DiskPtr($MaxDisks));  # Maybe large!
+  my $image="\0" x (DiskPtr($DisksPerCatalog));  # Maybe large!
   substr($image,0,4)="\0\1\2\3"; # Default onboot disks
-  foreach (1..$MaxDisks)
+  foreach (1..$DisksPerCatalog)
   {
     substr($image,$_*16+15,1)=chr($DiskUnformatted);
   }

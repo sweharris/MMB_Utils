@@ -91,9 +91,19 @@ MMB Impacting commands
 
 * dblank_mmb
     Creates blank 128Mb MMB file
+    If an additional paramter is added (between 1 and 15) then this will
+    create an Extended MMB (see below) with that number of additional
+    catalogues.  Note 15 additional catalogues will result in a 1.7Gb
+    file capable of handling 8176 disk images.
+       beeb dblank_mmb -f NEW.MMB 15
 
 * dcat
-    Catalogue: Show disk images stored in the MMB
+    Catalogue: Show disk images stored in the MMB.  The -a flag will also
+    show unformatted disks
+
+* dextend
+    Adds an additional catalogue to the MMB file, effectively adding an extra
+    511 disc slots to the image.  Will convert a normal MMB to a Extended MMB
 
 * dget_ssd
     Extracts an SSD from an MMB
@@ -136,6 +146,10 @@ MMB Impacting commands
 * dlabel
     Changes the label for disk in slot that shows with with *DCAT
     Note: this does not change the SSD title
+
+* dmmb_info
+    Report some basic statistics on the MMB file (number of extents,
+    number of disks, number unformatted)
 
 * donboot
     Shows the current "boot disk" settings, and lets you change them.
@@ -323,7 +337,7 @@ is 00 01 02 03 00 00 00 00
 "*ONBOOT 3 500" would make dd=F4 DD=01  (&01F4=500)
 
 The next 8 bytes (completing the 16 byte block) are unused and are
-typically all zero.
+typically all zero (see "Extended MMB", below).
 
 After that comes 511 blocks which consist of
   DISKNAME(12 chars)
@@ -337,6 +351,25 @@ each SSD and updates this name.
 
 Then each SSD is a chunk of 200Kb data following.  So disk 'n' starts
 at 'n'*204800+8192.  That's all there is to an MMB.
+
+An Extended MMB is pretty much just multiple MMBs concatenated on top
+of each other.  This can extend the number of disks an MMB can hold in
+steps of 511.  A previously unused byte (offset 8) in the table header
+indicates how many additional MMBs there are.  It consists of 0xA# where
+# is the number of additional entries.
+
+In this format we have
+  <Disk table Header for disks 0-510>
+  <511 SSD images>
+  <Disk table Header for disks 511->1021>
+  <511 SSD images>
+  <Disk table Header for disks 1022->1532>
+  <511 SSD images>
+up to a total of 15 additional headers, which results in disk numbers 0->8175.
+
+If this form of MMB is used in a BBC which doesn't understand the extended
+format then that machine should be able to read the first 511 disks, so
+is backwards compatible.
 
 An SSD is a simple 200K (80track 10 sector) image.  Since it's literally
 an image it follows the standard Acorn DFS layout.
@@ -525,3 +558,6 @@ Changelog
              Add new command "to_stdout"
 
 2021/09/28 - Allow "-a" for dcat to show all disk slots, even unformatted ones
+             Add the ability to handle Extended MMBs
+             Add dextend to add an extent to an MMB
+             Add dmmb_info to report on some basic MMB statistics
