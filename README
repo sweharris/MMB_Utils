@@ -147,6 +147,10 @@ MMB Impacting commands
     Changes the label for disk in slot that shows with with *DCAT
     Note: this does not change the SSD title
 
+* dmerge_mmb
+    Will merge multiple MMB files together to create an Extended MMB
+      beeb dmerge_mmb -f RESULTS.MMB part1.mmb part2.mmb part3.mmb
+
 * dmmb_info
     Report some basic statistics on the MMB file (number of extents,
     number of disks, number unformatted)
@@ -570,3 +574,4 @@ Changelog
              Add dextend to add an extent to an MMB
              Add dmmb_info to report on some basic MMB statistics
              Added dsplit_mmb
+             Added dmerge_mmb
