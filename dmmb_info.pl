@@ -32,7 +32,8 @@ if ($ext_byte < 160 || $ext_byte > 175)
   die "Base MMB image has unexpected character indicating length\n  We got $ext_byte but it should be 0 or between 160 and 175\n";
 }
 
-my %disk=BeebUtils::load_dcat();
+my ($disktable,%boot)=BeebUtils::load_onboot();
+my %disk=BeebUtils::load_dcat(\$disktable);
 
 my $form=0;
 my $tot=0;
@@ -46,4 +47,19 @@ foreach (keys %disk)
 print "MMB Filename: $dest\n" .
       "  Number of extents: " . ($ext_byte-159) . "\n" .
       "    Number of disks: $tot\n" .
-      "       #Unformatted: $form\n";
+      "       #Unformatted: $form\n" .
+      "       Onboot disks: ";
+
+foreach (0..3)
+{
+  my $d=$boot{$_};
+  my $t="<empty>";
+  if ($disk{$d}{Formatted})
+  {
+    my $L=$disk{$d}{ReadOnly}?" (L)":"";
+    $t="$disk{$d}{DiskTitle}$L";
+  }
+  print "                     " if $_;
+  print "$_: $d - $t\n";
+}
+
