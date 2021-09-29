@@ -166,6 +166,16 @@ MMB Impacting commands
     use (so dkill it first if you want to replace it).  The MMB
     catalogue name for this disk is set to the SSDs name
 
+* dreplace_mmb
+    Will replace a complete MMB image in an Extended MMB.  This may
+    be useful if you have an Extended MMB built from multiple sources
+    (eg a Games image, a Z80 image, a PanOS image) and you want to
+    update just the Z80 image.  It will update the catalogue and the
+    associated 511 disk images in the target Extended MMB with the
+    requested MMB
+
+      beeb dreplace_mmb new_z80.MMB 1
+
 * dsplit_mmb
     Will split a Extended MMB into a collection of single extent MMBs
     numbered 0.MMB -> F.MMB.   If an optional number is given then only
@@ -575,3 +585,4 @@ Changelog
              Add dmmb_info to report on some basic MMB statistics
              Added dsplit_mmb
              Added dmerge_mmb
+             Added dreplace_mmb
