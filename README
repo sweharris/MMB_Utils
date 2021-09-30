@@ -586,3 +586,5 @@ Changelog
              Added dsplit_mmb
              Added dmerge_mmb
              Added dreplace_mmb
+
+2021/09/30 - Added dbase command and report BASE value in dmmb_info
