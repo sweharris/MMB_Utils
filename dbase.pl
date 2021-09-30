@@ -59,5 +59,5 @@ else
   }
 
   syswrite($fh,chr($base),1);
-  print "Base set to: ",$base;
+  print "Base set to: $base\n";
 }
