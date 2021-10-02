@@ -471,7 +471,7 @@ sub load_dcat(;$)
 
 sub blank_mmb()
 {
-  my $image="\0" x (DiskPtr($DisksPerCatalog));  # Maybe large!
+  my $image="\0" x $MMBSize;
   substr($image,0,4)="\0\1\2\3"; # Default onboot disks
   foreach (1..$DisksPerCatalog)
   {

@@ -593,3 +593,4 @@ Changelog
              Fix critical offset calculation error for first disk in each
                extent
              Add bdiag
+             Fix blank_mmb image size so extensions start correctly blank
