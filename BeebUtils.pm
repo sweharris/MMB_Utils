@@ -396,7 +396,7 @@ sub DiskPtr($;$)
 
   # If the image is in a secondary catalogue then we need to add extra
   # DiskTableSize offsets
-  my $offset=ceil($DiskNo/$DisksPerCatalog);
+  my $offset=1+int($DiskNo/$DisksPerCatalog);
   return ($DiskTableSize*$offset)+($DiskNo*$DiskSize)+($Sec*$SecSize);
 }
 
