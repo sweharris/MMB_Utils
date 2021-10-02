@@ -588,3 +588,5 @@ Changelog
              Added dreplace_mmb
 
 2021/09/30 - Added dbase command and report BASE value in dmmb_info
+
+2021/10/02 - Allow dmmb_info to report on current base MMB onboot settings

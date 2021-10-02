@@ -274,11 +274,13 @@ sub OpenFile()
   return;
 }
 
-sub LoadDiskTable()
+sub LoadDiskTable(;$)
 {
+  my ($extent)=@_;
+  $extent=0 unless $extent;
   my ($disktable,$thistable);
   OpenFile;
-  sysseek($file_handle,0,0);
+  sysseek($file_handle,$extent*$MMBSize,0);
   sysread($file_handle,$disktable,$DiskTableSize);
 
   # Add any secondary catalogues
@@ -364,9 +366,10 @@ sub GetDskName($$)
 }
 
 # Returns a simple hashref of boot image and the disk catalog
-sub load_onboot()
+sub load_onboot(;$)
 {
-  my $disktable=LoadDiskTable;
+  my ($extent)=@_;
+  my $disktable=LoadDiskTable($extent);
   my %boot;
   foreach (0..3)
   {

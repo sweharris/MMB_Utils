@@ -40,6 +40,8 @@ $base=ord($base);
 my ($disktable,%boot)=BeebUtils::load_onboot();
 my %disk=BeebUtils::load_dcat(\$disktable);
 
+my ($disktable2,%boot2)=BeebUtils::load_onboot($base);
+
 my $form=0;
 my $tot=0;
 
@@ -51,10 +53,12 @@ foreach (keys %disk)
 
 print "MMB Filename: $dest\n" .
       "  Number of extents: " . ($ext_byte-159) . " (0->" . ($ext_byte-160) . ")\n" .
-      "        Base extent: $base\n" .
+      "        Base extent: $base (image IDs will be offset by " . ($base*511) . ")\n" .
       "    Number of disks: $tot\n" .
       "       #Unformatted: $form\n" .
-      "       Onboot disks: ";
+      "       Onboot disks:\n";
+
+print "             Extent 0: (MMB Base)\n" if $base;
 
 foreach (0..3)
 {
@@ -65,7 +69,21 @@ foreach (0..3)
     my $L=$disk{$d}{ReadOnly}?" (L)":"";
     $t="$disk{$d}{DiskTitle}$L";
   }
-  print "                     " if $_;
-  print "$_: $d - $t\n";
+  printf("                     %s: %4d - %-12s\n",$_,$d,$t);
 }
 
+if ($base)
+{
+  print "\n             Extent $base: (Currently selected)\n" if $base;
+  foreach (0..3)
+  {
+    my $d=$boot2{$_};
+    my $t="<empty>";
+    if ($disk{$d+$base*511}{Formatted})
+    {
+      my $L=$disk{$d+$base*511}{ReadOnly}?" (L)":"";
+      $t="$disk{$d+$base*511}{DiskTitle}$L";
+    }
+    printf("                     %s: %4d - %-12s\n",$_,$d,$t);
+  }
+}
