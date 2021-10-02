@@ -592,3 +592,4 @@ Changelog
 2021/10/02 - Allow dmmb_info to report on current base MMB onboot settings
              Fix critical offset calculation error for first disk in each
                extent
+             Add bdiag
