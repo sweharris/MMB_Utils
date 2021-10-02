@@ -536,6 +536,9 @@ sub load_external_ssd(;$$)
 sub put_ssd($$)
 {
   my ($image,$disk)=@_;
+
+  die "$disk is greater than maximum allowed of " . ($MaxDisks-1) . " for this MMB \n" if $disk >= $MaxDisks;
+
   OpenFile;
   sysseek($file_handle,DiskPtr($disk),0);
   
