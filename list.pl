@@ -41,6 +41,7 @@ while(@ARGV)
 $variant=lc($variant);
 my $basic=$BeebUtils::basic_tokens{$variant};
 my $extended=$BeebUtils::extended_tokens{$variant};
+my $alt=$BeebUtils::alt_line{$variant} || 0;
 
 die "Unknown variant: $variant\n" unless defined($basic);
 
@@ -59,21 +60,46 @@ while (!eof(F))
 {
   my %nextindent = ( 'FOR' => 0, 'REPEAT' => 0);
   my $ch;
-  # First char of each line should be ^M
-  read F,$ch,1; die "Bad program (expected ^M)\n" unless defined($ch) && $ch eq "\015";
+  my $line;
+  my $len;
 
-  # next two bytes are line number or end of program
-  read F,$ch,1; die "Bad program (line number high)\n" unless defined($ch);
-  last if $ch eq "\xff";  # end of program 
-  my $line=ord($ch)*256;
+  # There are two ways a line can be read; the Beeb way or the z80/b4w way.
 
-  read F,$ch,1; die "Bad program (line number low)\n" unless defined($ch);
-  $line+=ord($ch);
+  if (!$alt)
+  {
+    # The beeb way
+    # First char of each line should be ^M
+    read F,$ch,1; die "Bad program (expected ^M)\n" unless defined($ch) && $ch eq "\015";
 
-  # next byte is length of line
-  read F,$ch,1; die "Bad program (length)\n" unless defined($ch);
-  my $len=ord($ch)-4; die "Bad program (bad length)\n" if $len <0; # Already got 4 bytes
+    # next two bytes are line number or end of program
+    read F,$ch,1; die "Bad program (line number high)\n" unless defined($ch);
+    last if $ch eq "\xff";  # end of program 
+    $line=ord($ch)*256;
 
+    read F,$ch,1; die "Bad program (line number low)\n" unless defined($ch);
+    $line+=ord($ch);
+
+    # next byte is length of line
+    read F,$ch,1; die "Bad program (length)\n" unless defined($ch);
+    $len=ord($ch)-4; die "Bad program (bad length)\n" if $len <0; # Already got 4 bytes
+  }
+  else
+  {
+    # z80 way
+    # First character is line length;
+    read F,$ch,1; die "Bad program (length)\n" unless defined($ch);
+    $len=ord($ch)-3;
+    
+    # next two bytes are line number or end of program
+    read F,$ch,1; die "Bad program (line number low)\n" unless defined($ch);
+    $line=ord($ch);
+
+    read F,$ch,1; die "Bad program (line number high)\n" unless defined($ch);
+    $line+=ord($ch)*256;
+
+    last if $line == 65535;
+    die "Bad program (bad length)\n" if $len <0; # Needs at least 3 bytes
+  }
   # rest of line
   my $raw=0;  # Set to 1 if in quotes
   my $decode="";
@@ -146,7 +172,14 @@ while (!eof(F))
   }
 
   my $i=substr(" "x255,1,$indent{FOR}*2+$indent{REPEAT}*2+($listo&1));
-  printf("%5d%s%s\n",$line,$i,$decode);
+  if ($line)
+  {
+    printf("%5d%s%s\n",$line,$i,$decode);
+  }
+  else
+  {
+    printf("     %s%s\n",$i,$decode);
+  }
   $indent{FOR}+=$nextindent{FOR}; $indent{FOR}=0 if $indent{FOR}<0;
   $indent{REPEAT}+=$nextindent{REPEAT}; $indent{REPEAT}=0 if $indent{REPEAT}<0;
 } 

@@ -58,6 +58,11 @@ our $BBC_FILE="";
 # This is "our" so external programs can see it
 our %basic_tokens;
 our %extended_tokens;
+# z80 uses different line definitions
+# Basic 1/2/4 is <OD><lineno-high><lineno-low><len> and ends with linehi=ff
+# z80 and Basic 4 windows is <FF><lineno-low><lineno-high> and ends with
+#   len=0 lineno=ffff
+our %alt_line;
 
 $basic_tokens{"_BASE_"}=
 {
@@ -135,6 +140,7 @@ $extended_tokens{"basic4"}={};
 
 $basic_tokens{"z80"}= { 206 => ['PUT',0] };
 $extended_tokens{"z80"}={};
+$alt_line{"z80"}=1;
 
 $basic_tokens{"arm"}=
 {
@@ -192,6 +198,7 @@ $basic_tokens{"b4w"}=
    16 => ['EXIT',0],
 };
 $extended_tokens{"b4w"}={};
+$alt_line{"b4w"}=1;
 
 my $SOLIDISK=0;
 my $WATFORD=0;
