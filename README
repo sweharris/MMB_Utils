@@ -595,3 +595,5 @@ Changelog
              Add bdiag
              Fix blank_mmb image size so extensions start correctly blank
              Have put_ssd abort if request disk is out of range
+
+2023/03/21 - Handle z80 basic and basic 4 windows; they code lines differently
