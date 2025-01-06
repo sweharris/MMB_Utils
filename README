@@ -117,11 +117,16 @@ MMB Impacting commands
     If two files would be extracted with the same name then a -### count is
     added to the end.
 
+    Optionally -merge and -overwrite can be used (see below for full syntax)
+
     For each file a .inf is also created in the form
       Filename LOAD EXEC [Locked] CRC=####
     The Filename is the original BBC Filename.
     This "inf" file is compatble to the bbcim extraction tool from
     W.H.Scholten
+
+    A subset of files can be extracted by adding a filter at the end of
+    the command line e.g. '^*.eg*$' would match all files containing 'eg' 
 
 * dform
     Puts a blank SSD onto the MMB.  Allows you to title the disk at the
@@ -549,6 +554,78 @@ This is wasteful of data (a whole unused sector!) but given we have 360K
 of data rather than 200K of the original Acorn format, I guess Opus figured
 this was a fair trade off.
 
+===================================================================
+dgetfile and getfile filenames
+===================================================================
+
+There are potential clashed when extracting files using either dgetfile
+or getfile
+
+There are two types of issue
+
+1. Special filenames on the ssd image e.g. filenames called
+'<0x81>Hello' and '<0x82>Hello' Whilst these can not be created be
+default they can be created (and were for copywrite protction for example)
+with tools like *DFIX. In this case MMB_Utils replaces the special characters
+with an '_' (underscore) and thus both files would have the same name
+
+2. An issue arises if you use the [-merge] or [-overwrite] flags.
+The [-merge] flag overwrites the default of requiring an empty directory
+
+The default behaviour is to create a new folder and put all the files in the
+folder. If the folder already exists the programme stops. In this case only
+issue 1 can occur, Using the above example '<0x81>Hello' will be extracted
+as '_Hello' as the '<0x81>' is replaced by '_'. The second file '<0x82>Hello'
+is extracted as '0-_Hello' with the '_' replacing the '<0x82>' and '0-'
+being used as a prefix to avoid name clashes. If there was a third file it
+would be prefixed with '1-' and so on incrementally.
+
+The first flag '-merge' allows the programme to continue even if the folder
+exists and therefore there could already have a file called '_Hello'. In
+this case the next extracted file would have a suffix of '-0' i.e.
+'_Hello-0' and each subsequent iteration would inrement the number (-1, -2,
+ etc.)
+
+The second fage '-overwrite' allows the programme to overwrite existing files
+so if as above there is a file called '_Hello' and a new extracted file also
+has that name then the orignal file is overwritten withoput further warning.
+'-overwrite' has no effect if '-merge' is not specified.
+
+In summary an example disk has these files
+
+      <0x81>Hello
+      <0x82>Hello
+      Goodbye
+
+In each case the first run will result in a folder called default being
+created with the following files
+
+      _Hello
+      0-Hello
+      Goodbye
+
+Case 1: dgetfile default.ssd default
+
+Second run - Programme exits with an error becuase the file already exists
+
+Case 2: dgetfile -merge default.ssd default
+
+Second Run - A second copy is created of each file
+
+      _Hello
+      _Hello-0
+      0_Hello
+      0_Hello-0
+      Goodbye
+      Goodbye-0
+
+Case 3: dgetfile -merge -overwrite default.ssd default
+
+Second Run - Each file is replaced with the latst version from the ssd
+
+      _Hello
+      0_Hello
+      Goodbye
 
 Changelog
 =========
@@ -597,3 +674,7 @@ Changelog
              Have put_ssd abort if request disk is out of range
 
 2023/03/21 - Handle z80 basic and basic 4 windows; they code lines differently
+
+2024/12/25 - Implemented -merge and -overwrite for (d)getfile functionality (Thanks to datamgmt on Stardot)
+
+2024/12/28 - Added filer option to(d)getfile to allow regex filtering of filenames (Thanks to datamgmt on Stardot)

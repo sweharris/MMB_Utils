@@ -925,43 +925,67 @@ sub ExtractFile($$;%)
 }
 
 # SSD image saved to current directory
-sub save_all_files_from_ssd($;$)
+sub save_all_files_from_ssd($;$$$)
 {
-  my ($image,$verbose)=@_;
+  my ($image,$verbose,$overwrite,$filter)=@_;
+
+  $overwrite //= 0;
+  $filter //= '^.*$';
+  my $filter_regex = qr/$filter/;
 
   my %files=read_cat($image);
 
+  # Iterate over each entry in %files
+  for my $key (keys %files)
+  {
+      my $original_name = $files{$key}{name};
+      my $converted = $original_name;
+      next unless $original_name;
+
+      # These keep Unix filenames at least a little sane
+      $converted =~ tr/ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_+.!@$%,-/_/c;
+      $converted =~ s/^\$\.// unless $converted eq '$.';
+
+      # Start with the converted value
+      my $unique = $converted;
+      # Ensure the converted value is unique across all entries
+      my $prefix = 0;
+      while (grep { $_ ne $key && $files{$_}{converted} && $files{$_}{converted} eq $unique } keys %files) {
+          $unique = $prefix++ . '-' . $converted;  # Prefix with '0-', '1-', etc.
+      }
+
+      # Store the unique converted value
+      $files{$key}{converted} = $unique;
+  }
 
   foreach (keys %files)
   {
     my $n=$files{$_}{name};
     next unless $n;
+    next unless $n =~ $filter_regex;
+    my $c=$files{$_}{converted};
 
     my $file=ExtractFile($image,$n,%files);
     my $crc=CalcCrc(\$file);
 
-  # These keep Unix filenames at least a little sane
-    $n=~tr/ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_+.!@$%,-/_/c;
-    $n=~s/^\$\.// unless $n eq '$.';
-
-    if ( -e $n )
+    if ( -e $c && !$overwrite )
     {
-      my $n1=$n;
+      my $c1=$c;
       my $cnt=0;
-      while ( -e $n1 ) { $n1 = $n . "-" . ($cnt++); }
-      $n=$n1;
+      while ( -e $c1 ) { $c1 = $c . "-" . ($cnt++); }
+      $c=$c1;
     }
 
-    print "Saving $files{$_}{name} as $n\n" if $verbose;
+    print "Saving $files{$_}{name} as $c\n" if $verbose;
 
-    my $fh=new FileHandle ">$n";
-    die "Can not open $n for saving\n" unless $fh;
+    my $fh=new FileHandle ">$c";
+    die "Can not open $c for saving\n" unless $fh;
     binmode($fh);
     print $fh $file;
     close($fh);
 
-    $fh=new FileHandle ">$n.inf";
-    die "Can not open $n.inf for saving\n" unless $fh;
+    $fh=new FileHandle ">$c.inf";
+    die "Can not open $c.inf for saving\n" unless $fh;
     printf $fh "%-9s %6X %6X %sCRC=%04X",
                              $files{$_}{name},
                              $files{$_}{load},
